@@ -23,28 +23,38 @@ Bare repos + worktrees enable:
 
 ## Installation
 
-### Option 1: Direct installation (recommended)
+### Option 1: Using skills.sh (recommended)
+
+The easiest way to install this skill is using [skills.sh](https://github.com/anthropics/skills):
+
+```bash
+npx skills add johnsonshi/windows-bare-repo-worktree-skill --skill windows-bare-repo-worktree
+```
+
+This will automatically install the skill to `.claude/skills/windows-bare-repo-worktree/`.
+
+### Option 2: Direct installation
 
 Copy `SKILL.md` to your repository's `.claude/skills/windows-bare-repo-worktree/` directory:
 
 ```bash
 mkdir -p .claude/skills/windows-bare-repo-worktree
 curl -o .claude/skills/windows-bare-repo-worktree/SKILL.md \
-  https://raw.githubusercontent.com/<your-username>/windows-bare-repo-worktree-skill/main/skills/windows-bare-repo-worktree/SKILL.md
+  https://raw.githubusercontent.com/johnsonshi/windows-bare-repo-worktree-skill/main/skills/windows-bare-repo-worktree/SKILL.md
 ```
 
-### Option 2: Clone this repository
+### Option 3: Clone this repository
 
 ```bash
-git clone https://github.com/<your-username>/windows-bare-repo-worktree-skill.git
+git clone https://github.com/johnsonshi/windows-bare-repo-worktree-skill.git
 mkdir -p .claude/skills/windows-bare-repo-worktree
 cp windows-bare-repo-worktree-skill/skills/windows-bare-repo-worktree/SKILL.md .claude/skills/windows-bare-repo-worktree/
 ```
 
-### Option 3: Add as a Git submodule
+### Option 4: Add as a Git submodule
 
 ```bash
-git submodule add https://github.com/<your-username>/windows-bare-repo-worktree-skill.git .claude/skills/windows-bare-repo-worktree
+git submodule add https://github.com/johnsonshi/windows-bare-repo-worktree-skill.git .claude/skills/windows-bare-repo-worktree
 # Note: With this approach, the skill will be at .claude/skills/windows-bare-repo-worktree/skills/windows-bare-repo-worktree/SKILL.md
 # You may want to create a symlink or adjust your setup accordingly
 ```

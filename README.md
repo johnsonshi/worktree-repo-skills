@@ -51,14 +51,6 @@ mkdir -p .claude/skills/windows-bare-repo-worktree
 cp windows-bare-repo-worktree-skill/skills/windows-bare-repo-worktree/SKILL.md .claude/skills/windows-bare-repo-worktree/
 ```
 
-### Option 4: Add as a Git submodule
-
-```bash
-git submodule add https://github.com/johnsonshi/windows-bare-repo-worktree-skill.git .claude/skills/windows-bare-repo-worktree
-# Note: With this approach, the skill will be at .claude/skills/windows-bare-repo-worktree/skills/windows-bare-repo-worktree/SKILL.md
-# You may want to create a symlink or adjust your setup accordingly
-```
-
 ## Prerequisites
 
 - **Windows** (not WSL)

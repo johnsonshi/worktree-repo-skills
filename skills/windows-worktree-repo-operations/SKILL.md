@@ -100,22 +100,85 @@ cd $REPO && git worktree add branches/master master
 
 Once you have the default branch worktree, all new feature branches should be created from it.
 
-### Create a new feature branch
+### Detecting if Repository is a Fork
 
-Always create new branches from the default branch worktree (not from a bare ref). This ensures your new branch starts from the latest local state of main:
+A repository is considered a **fork** if it has both `origin` and `upstream` remotes configured. Check this from within the default branch worktree:
 
 ```bash
-# First, make sure main is up to date
-cd $REPO/branches/main && git pull origin main
+cd $REPO/branches/main && git remote -v
+```
 
-# Then create the new branch worktree from the bare repo root
-cd $REPO && git worktree add branches/<new-branch-name> -b <new-branch-name> main
+If you see both remotes:
+- `origin` → your fork (e.g., `git@github.com:youruser/repo.git`)
+- `upstream` → original repo (e.g., `git@github.com:orgname/repo.git`)
+
+Then it's a **fork** and you should sync with upstream before creating new branches.
+
+### Create a new feature branch
+
+Always create new branches from the default branch worktree (not from a bare ref). This ensures your new branch starts from the latest local state of main.
+
+**IMPORTANT: For forks only** — unless the user explicitly specifies a different base branch, always create new branches from the default branch (main/master). Before creating the new branch, automatically sync the fork's default branch with upstream.
+
+#### Step 1: Determine the default branch
+
+```bash
+# Check which default branch exists (main or master)
+cd $REPO && git show-ref --verify refs/heads/main 2>/dev/null && echo "main" || echo "master"
+```
+
+Store the result as `$DEFAULT_BRANCH` (either `main` or `master`).
+
+#### Step 2: Check if this is a fork
+
+```bash
+cd $REPO/branches/$DEFAULT_BRANCH && git remote -v | grep -q "upstream" && echo "fork" || echo "not-fork"
+```
+
+#### Step 3: If it's a fork, sync with upstream first
+
+```bash
+# Only run these commands if upstream remote exists
+cd $REPO/branches/$DEFAULT_BRANCH
+git fetch upstream
+git rebase upstream/$DEFAULT_BRANCH
+git push origin $DEFAULT_BRANCH
+```
+
+#### Step 4: Create the new branch worktree
+
+After syncing (if fork), create the new branch:
+
+```bash
+cd $REPO && git worktree add branches/<new-branch-name> -b <new-branch-name> $DEFAULT_BRANCH
 ```
 
 For feature branches with a path prefix (e.g., `feature/my-feature`), the parent directories are created automatically by `git worktree add`:
 
 ```bash
-cd $REPO && git worktree add branches/feature/<new-branch-name> -b feature/<new-branch-name> main
+cd $REPO && git worktree add branches/feature/<new-branch-name> -b feature/<new-branch-name> $DEFAULT_BRANCH
+```
+
+#### Complete workflow for creating a new branch (with fork detection)
+
+```bash
+# 1. Determine default branch
+DEFAULT_BRANCH=$(cd $REPO && git show-ref --verify refs/heads/main 2>/dev/null && echo "main" || echo "master")
+
+# 2. Check if fork (has upstream remote)
+cd $REPO/branches/$DEFAULT_BRANCH
+IS_FORK=$(git remote -v | grep -q "upstream" && echo "yes" || echo "no")
+
+# 3. If fork, sync with upstream
+if [ "$IS_FORK" = "yes" ]; then
+  echo "Fork detected. Syncing with upstream..."
+  git fetch upstream
+  git rebase upstream/$DEFAULT_BRANCH
+  git push origin $DEFAULT_BRANCH
+fi
+
+# 4. Create new branch worktree
+cd $REPO && git worktree add branches/<new-branch-name> -b <new-branch-name> $DEFAULT_BRANCH
 ```
 
 ### Check out an existing remote branch
@@ -368,5 +431,6 @@ gh pr create --title "title" --body "description"
 - All branch working directories live under `branches/`. Do not create worktrees elsewhere.
 - If `branches/` does not exist yet, create it with `mkdir -p branches` before adding any worktrees.
 - Always ensure a worktree for the default branch (main or master) exists before creating new feature branches. New branches should be created from the default branch.
+- **For forks only**: When creating a new branch (unless user specifies a different base), automatically detect if the repo is a fork (has both `origin` and `upstream` remotes). If it's a fork, sync the default branch with upstream (fetch, rebase, push) before creating the new branch worktree.
 - When the user says "switch to branch X", add it as a worktree under `branches/X` (or confirm it already exists there).
 - Use `powershell.exe -Command "..."` when PowerShell-specific commands are needed (e.g., `New-Item`, `Remove-Item`), since the Bash tool runs under Git Bash.
